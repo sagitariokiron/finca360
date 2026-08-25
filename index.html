@@ -13,7 +13,6 @@
             height: 100%;
             overflow: hidden;
             background-color: #2c3e50;
-            font-family: sans-serif;
         }
         iframe {
             width: 100%;
@@ -21,79 +20,9 @@
             border: none;
             display: block;
         }
-        #offline-screen {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #2c3e50;
-            color: white;
-            text-align: center;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-            z-index: 9999;
-        }
-        #offline-screen img {
-            max-width: 110px;
-            height: auto;
-            margin-bottom: 20px;
-            display: block;
-        }
-        #offline-screen h2 {
-            margin-bottom: 10px;
-            font-size: 22px;
-        }
-        #offline-screen p {
-            margin-bottom: 20px;
-            font-size: 15px;
-            color: #bdc3c7;
-            max-width: 300px;
-        }
-        #offline-screen button {
-            background-color: #f39c12;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
-
-    <!-- Pantalla de emergencia -->
-    <div id="offline-screen">
-        <img src="Logo_Finca360_Final2.png" alt="Logo FINCA360">
-        <h2>⚠️ Sin Conexión a Internet</h2>
-        <p>FINCA360 necesita conexión para cargar correctamente sus servicios.</p>
-        <button onclick="location.reload()">Reintentar</button>
-    </div>
-
-    <!-- Iframe limpio apuntando a tu Web App -->
     <iframe src="https://script.google.com/macros/s/AKfycbwImRayQPhDvsJcb70Zqkc9s9y6Ut-BYJwixOQKTQy4bQYM0avLwbJ-N0YCJUdxvf/exec" allow="geolocation; camera; microphone"></iframe>
-
-    <script>
-        // Verificación inteligente de red
-        window.addEventListener('load', function() {
-            if (!navigator.onLine) {
-                document.getElementById('offline-screen').style.display = 'flex';
-            }
-        });
-
-        window.addEventListener('offline', function() {
-            document.getElementById('offline-screen').style.display = 'flex';
-        });
-
-        window.addEventListener('online', function() {
-            document.getElementById('offline-screen').style.display = 'none';
-        });
-    </script>
 </body>
 </html>
