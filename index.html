@@ -21,22 +21,7 @@
             border: none;
             display: block;
         }
-          #offline-screen h2 {
-            margin-bottom: 10px;
-            font-size: 24px;
-        }
-        /* --- NUEVO ESTILO PARA EL LOGO --- */
-        #offline-screen img {
-            max-width: 100px; /* Ajusta el tamaño máximo del logo */
-            height: auto;
-            margin-bottom: 20px; /* Espacio debajo del logo */
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        /* ----------------------------------- */
-        #offline-screen p {
-            margin-bottom: 20px;
+        #offline-screen {
             display: none;
             position: absolute;
             top: 0;
@@ -53,14 +38,21 @@
             box-sizing: border-box;
             z-index: 9999;
         }
+        #offline-screen img {
+            max-width: 110px;
+            height: auto;
+            margin-bottom: 20px;
+            display: block;
+        }
         #offline-screen h2 {
             margin-bottom: 10px;
-            font-size: 24px;
+            font-size: 22px;
         }
         #offline-screen p {
             margin-bottom: 20px;
-            font-size: 16px;
+            font-size: 15px;
             color: #bdc3c7;
+            max-width: 300px;
         }
         #offline-screen button {
             background-color: #f39c12;
@@ -76,26 +68,31 @@
 </head>
 <body>
 
-    <!-- Pantalla de emergencia si no hay internet -->
+    <!-- Pantalla de emergencia -->
     <div id="offline-screen">
-        <img src="Logo_Finca360_Final2.png" alt="Logo FINCA360" style="max-width: 100px; height: auto; margin-bottom: 20px; display: block;">
+        <img src="Logo_Finca360_Final2.png" alt="Logo FINCA360">
         <h2>⚠️ Sin Conexión a Internet</h2>
-        <p>FINCA360 necesita conexión para iniciar por primera vez o sincronizar datos.</p>
+        <p>FINCA360 necesita conexión para cargar correctamente sus servicios.</p>
         <button onclick="location.reload()">Reintentar</button>
     </div>
 
-    <!-- Iframe con tu app original -->
+    <!-- Iframe limpio apuntando a tu Web App -->
     <iframe src="https://script.google.com/macros/s/AKfycbwImRayQPhDvsJcb70Zqkc9s9y6Ut-BYJwixOQKTQy4bQYM0avLwbJ-N0YCJUdxvf/exec" allow="geolocation; camera; microphone"></iframe>
 
     <script>
-        // Si al cargar la página detectamos que no hay internet, ocultamos el iframe y mostramos el aviso
-        if (!navigator.onLine) {
-            document.getElementById('offline-screen').style.display = 'flex';
-        }
+        // Verificación inteligente de red
+        window.addEventListener('load', function() {
+            if (!navigator.onLine) {
+                document.getElementById('offline-screen').style.display = 'flex';
+            }
+        });
 
-        // Por si pierde la red de repente mientras intenta abrir
         window.addEventListener('offline', function() {
             document.getElementById('offline-screen').style.display = 'flex';
+        });
+
+        window.addEventListener('online', function() {
+            document.getElementById('offline-screen').style.display = 'none';
         });
     </script>
 </body>
