@@ -13,66 +13,16 @@
             height: 100%;
             overflow: hidden;
             background-color: #2c3e50;
-            font-family: sans-serif;
         }
-        /* El iframe de tu app */
-        #app-frame {
+        iframe {
             width: 100%;
             height: 100%;
             border: none;
             display: block;
         }
-        /* La pantalla de error que querías hacer */
-        #offline-screen {
-            display: none; /* Oculta por defecto */
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #2c3e50;
-            color: white;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            z-index: 9999;
-        }
-        #offline-screen h2 { margin-bottom: 10px; }
     </style>
 </head>
 <body>
-
-    <!-- Pantalla de Sin Conexión -->
-    <div id="offline-screen">
-        <h2>Sin conexión a Internet</h2>
-        <p>Por favor, revisa tus datos o Wi-Fi para usar FINCA360.</p>
-    </div>
-
-    <!-- Tu sistema intacto -->
-    <iframe id="app-frame" src="https://script.google.com/macros/s/AKfycbwImRayQPhDvsJcb70Zqkc9s9y6Ut-BYJwixOQKTQy4bQYM0avLwbJ-N0YCJUdxvf/exec" allow="geolocation; camera; microphone"></iframe>
-
-    <script>
-        const offlineScreen = document.getElementById('offline-screen');
-        const appFrame = document.getElementById('app-frame');
-
-        // Función que revisa si hay internet
-        function checkConnection() {
-            if (navigator.onLine) {
-                offlineScreen.style.display = 'none';
-                appFrame.style.display = 'block';
-            } else {
-                offlineScreen.style.display = 'flex';
-                appFrame.style.display = 'none';
-            }
-        }
-
-        // Escucha cuando el internet se va o vuelve
-        window.addEventListener('online', checkConnection);
-        window.addEventListener('offline', checkConnection);
-        
-        // Revisión inicial al abrir la app
-        checkConnection();
-    </script>
+    <iframe src="https://script.google.com/macros/s/AKfycbwImRaYqPhDvsJcb70Zqkc9s9yy6Ut-BYJwixOQKTQy4bQYM0avLwbYJ-N0YCJUdxvf/exec" allow="geolocation; camera; microphone"></iframe>
 </body>
 </html>
