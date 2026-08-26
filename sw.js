@@ -1,9 +1,10 @@
 // Le ponemos "v2" para obligar al celular a notar que hay una actualización
-const CACHE_NAME = 'finca360-offline-v2';
+const CACHE_NAME = 'finca360-offline-v3';
 const urlsToCache = [
   './',
   './index.html',
   './manifest.json'
+  './Logo_Finca360_Final2.png'
 ];
 
 // 1. Instalación: Forzamos a que el nuevo celador tome el control de inmediato
