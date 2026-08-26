@@ -44,15 +44,16 @@
         
         let estabaDesconectado = false; // Memoria para saber si venimos sin internet
 
-        function revisarConexion() {
+       function revisarConexion() {
             if (navigator.onLine) {
-                pantallaOffline.style.display = 'none';
-                iframeApp.style.display = 'block';
-                
-                // Si veníamos sin internet, recargamos el iframe para matar al dinosaurio
+                // Si veníamos sin internet, esperamos 3.5 segundos y reiniciamos todo limpio
                 if (estabaDesconectado) {
-                    iframeApp.src = iframeApp.src; 
-                    estabaDesconectado = false;
+                    setTimeout(() => {
+                        window.location.reload(); 
+                    }, 3500); 
+                } else {
+                    pantallaOffline.style.display = 'none';
+                    iframeApp.style.display = 'block';
                 }
             } else {
                 pantallaOffline.style.display = 'flex';
