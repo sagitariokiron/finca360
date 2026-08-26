@@ -27,10 +27,9 @@
 </head>
 <body>
 
-    <!-- Esta es la pantalla que sale cuando se va el internet -->
+    <!-- Esta es la pantalla que sale cuando se va el internet con tu logo -->
     <div id="pantalla-offline">
-        <!-- Si tienes el link de tu logo, puedes cambiar este texto por una etiqueta <img> -->
-        <h1 style="font-size: 3rem; margin-bottom: 10px;">FINCA 360</h1>
+        <img src="Logo_Finca360_Final2.png" alt="Logo FINCA360" style="width: 180px; margin-bottom: 20px; border-radius: 15px;">
         <h2>Sin conexión a Internet</h2>
         <p>Por favor, revisa tu conexión de datos o Wi-Fi para poder ver el tablero.</p>
     </div>
@@ -38,18 +37,27 @@
     <!-- Tu aplicación intacta -->
     <iframe id="mi-app" src="https://script.google.com/macros/s/AKfycbwImRaYqPhDvsJcb70Zqkc9s9yy6Ut-BYJwixOQKTQy4bQYM0avLwbYJ-N0YCJUdxvf/exec" allow="geolocation; camera; microphone"></iframe>
 
-    <!-- Código inteligente que detecta si hay internet -->
+    <!-- Código inteligente que detecta si hay internet y recarga para matar al dinosaurio -->
     <script>
         const pantallaOffline = document.getElementById('pantalla-offline');
         const iframeApp = document.getElementById('mi-app');
+        
+        let estabaDesconectado = false; // Memoria para saber si venimos sin internet
 
         function revisarConexion() {
             if (navigator.onLine) {
                 pantallaOffline.style.display = 'none';
                 iframeApp.style.display = 'block';
+                
+                // Si veníamos sin internet, recargamos el iframe para matar al dinosaurio
+                if (estabaDesconectado) {
+                    iframeApp.src = iframeApp.src; 
+                    estabaDesconectado = false;
+                }
             } else {
                 pantallaOffline.style.display = 'flex';
                 iframeApp.style.display = 'none';
+                estabaDesconectado = true;
             }
         }
 
