@@ -56,7 +56,7 @@
         // 1. Cronómetro de seguridad: Si en 4 segundos el iframe no carga, asumimos red caída
         function iniciarCronometroEmergencia() {
             appCargadaExitosamente = false;
-            temporizadorCarga = setTimeout(activarModoOffline, 4000); // 4 segundos exactos
+            temporizadorCarga = setTimeout(activarModoOffline, 8000); // 8 segundos exactos
         }
 
         // 2. Si el iframe logra cargar bien, cancelamos el cronómetro y mostramos la app
