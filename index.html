@@ -37,53 +37,27 @@
     <!-- Tu aplicación intacta -->
     <iframe id="mi-app" src="https://script.google.com/macros/s/AKfycbwImRaYqPhDvsJcb70Zqkc9s9yy6Ut-BYJwixOQKTQy4bQYM0avLwbYJ-N0YCJUdxvf/exec" allow="geolocation; camera; microphone"></iframe>
 
-    <!-- Código inteligente que detecta si hay internet y recarga para matar al dinosaurio -->
+   <!-- Código inteligente que detecta si hay internet -->
     <script>
         const pantallaOffline = document.getElementById('pantalla-offline');
         const iframeApp = document.getElementById('mi-app');
-        
-        let temporizadorCarga = null;
-        let appCargadaExitosamente = false;
-
-        function activarModoOffline() {
-            if (!appCargadaExitosamente) {
-                console.warn("⚠️ Señal muy débil o ausente. Forzando pantalla offline.");
+    
+        function revisarConexion() {
+            if (navigator.onLine) {
+                pantallaOffline.style.display = 'none';
+                iframeApp.style.display = 'block';
+            } else {
                 pantallaOffline.style.display = 'flex';
                 iframeApp.style.display = 'none';
             }
         }
-
-        // 1. Cronómetro de seguridad: Si en 4 segundos el iframe no carga, asumimos red caída
-        function iniciarCronometroEmergencia() {
-            appCargadaExitosamente = false;
-            temporizadorCarga = setTimeout(activarModoOffline, 8000); // 8 segundos exactos
-        }
-
-        // 2. Si el iframe logra cargar bien, cancelamos el cronómetro y mostramos la app
-        iframeApp.onload = function() {
-            clearTimeout(temporizadorCarga);
-            appCargadaExitosamente = true;
-            pantallaOffline.style.display = 'none';
-            iframeApp.style.display = 'block';
-            console.log("✅ Aplicación cargada correctamente.");
-        };
-
-        // 3. Validación inicial al abrir la app
-        if (!navigator.onLine) {
-            activarModoOffline();
-        } else {
-            iniciarCronometroEmergencia();
-        }
-
-        // Escuchar cambios de red en vivo por si recupera señal
-        window.addEventListener('online', function() {
-            window.location.reload(); // Recarga limpia si vuelve el internet
-        });
+    
+        // Escuchar si la red se cae o vuelve (señal "X")
+        window.addEventListener('online', function() { window.location.reload(); });
+        window.addEventListener('offline', revisarConexion);
         
-        window.addEventListener('offline', function() {
-            activarModoOffline();
-        });
-
+        revisarConexion(); // Revisar apenas abre
+    
         // Aquí conectamos al celador (Service Worker)
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
