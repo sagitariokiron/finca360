@@ -37,39 +37,29 @@
     <!-- Tu aplicación intacta -->
     <iframe id="mi-app" src="https://script.google.com/macros/s/AKfycbwImRaYqPhDvsJcb70Zqkc9s9yy6Ut-BYJwixOQKTQy4bQYM0avLwbYJ-N0YCJUdxvf/exec" allow="geolocation; camera; microphone"></iframe>
 
-    <!-- Código inteligente con cronómetro de 8 SEGUNDOS -->
+           <!-- Código inteligente definitivo: Sin parpadeos con señales bajas -->
 <script>
     const pantallaOffline = document.getElementById('pantalla-offline');
     const iframeApp = document.getElementById('mi-app');
     
     let temporizadorCarga = null;
     let appCargadaExitosamente = false;
+    let timerIntermitencia = null;
 
-    function activarModoOffline() {
-        if (!appCargadaExitosamente) {
-            pantallaOffline.style.display = 'flex';
-            iframeApp.style.display = 'none';
-        }
-    }
-
-    // Cronómetro de seguridad ampliado a 8 SEGUNDOS
+    // Cronómetro de seguridad de 8 segundos (trabaja en silencio al abrir)
     function iniciarCronometroEmergencia() {
         appCargadaExitosamente = false;
         
-        if (!navigator.onLine) {
-            activarModoOffline();
-            return;
-        }
-
         temporizadorCarga = setTimeout(function() {
-            if (!appCargadaExitosamente) {
-                console.warn("⚠️ Tiempo agotado (8s). Señal congelada.");
-                activarModoOffline();
+            // Solo muestra el mensaje si pasaron 8 segundos completos y el internet sigue muerto
+            if (!appCargadaExitosamente && !navigator.onLine) {
+                pantallaOffline.style.display = 'flex';
+                iframeApp.style.display = 'none';
             }
         }, 8000); 
     }
 
-    // Si la app carga bien con 4G, apagamos el cronómetro
+    // Si el iframe carga bien (incluso con 2 barras de 4G), cancelamos todo y mostramos la app normal
     iframeApp.onload = function() {
         clearTimeout(temporizadorCarga);
         appCargadaExitosamente = true;
@@ -77,25 +67,26 @@
         iframeApp.style.display = 'block';
     };
 
-    // Arrancamos el cronómetro apenas se abre la página
+    // Arrancamos el cronómetro en segundo plano sin mostrar nada de entrada
     iniciarCronometroEmergencia();
 
-   // Eventos de red con margen de paciencia para señales intermitentes
-    let timerIntermitencia = null;
-
+    // Eventos de red con filtro para evitar que parpadee por bajones de una barra
     window.addEventListener('online', function() {
         if (timerIntermitencia) clearTimeout(timerIntermitencia);
         window.location.reload(); 
     });
 
     window.addEventListener('offline', function() {
-        // Si las barras bajan a 1 o 2 pero vuelve rápido, esperamos 4 segundos antes de mostrar la pantalla offline
+        // Si las barras bajan, esperamos 5 segundos reales antes de asumir que se cayó del todo
         timerIntermitencia = setTimeout(function() {
-            activarModoOffline();
-        }, 4000); 
+            if (!navigator.onLine) {
+                pantallaOffline.style.display = 'flex';
+                iframeApp.style.display = 'none';
+            }
+        }, 5000); 
     });
 
-    // Aquí conectamos al celador (Service Worker)
+    // Celador (Service Worker)
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js');
     }
