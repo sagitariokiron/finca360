@@ -37,31 +37,58 @@
     <!-- Tu aplicación intacta -->
     <iframe id="mi-app" src="https://script.google.com/macros/s/AKfycbwImRaYqPhDvsJcb70Zqkc9s9yy6Ut-BYJwixOQKTQy4bQYM0avLwbYJ-N0YCJUdxvf/exec" allow="geolocation; camera; microphone"></iframe>
 
-   <!-- Código inteligente que detecta si hay internet -->
-    <script>
-        const pantallaOffline = document.getElementById('pantalla-offline');
-        const iframeApp = document.getElementById('mi-app');
+    <!-- Código inteligente con cronómetro de 8 SEGUNDOS -->
+<script>
+    const pantallaOffline = document.getElementById('pantalla-offline');
+    const iframeApp = document.getElementById('mi-app');
     
-        function revisarConexion() {
-            if (navigator.onLine) {
-                pantallaOffline.style.display = 'none';
-                iframeApp.style.display = 'block';
-            } else {
-                pantallaOffline.style.display = 'flex';
-                iframeApp.style.display = 'none';
-            }
+    let temporizadorCarga = null;
+    let appCargadaExitosamente = false;
+
+    function activarModoOffline() {
+        if (!appCargadaExitosamente) {
+            pantallaOffline.style.display = 'flex';
+            iframeApp.style.display = 'none';
         }
-    
-        // Escuchar si la red se cae o vuelve (señal "X")
-        window.addEventListener('online', function() { window.location.reload(); });
-        window.addEventListener('offline', revisarConexion);
+    }
+
+    // Cronómetro de seguridad ampliado a 8 SEGUNDOS
+    function iniciarCronometroEmergencia() {
+        appCargadaExitosamente = false;
         
-        revisarConexion(); // Revisar apenas abre
-    
-        // Aquí conectamos al celador (Service Worker)
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
+        if (!navigator.onLine) {
+            activarModoOffline();
+            return;
         }
-    </script>
+
+        temporizadorCarga = setTimeout(function() {
+            if (!appCargadaExitosamente) {
+                console.warn("⚠️ Tiempo agotado (8s). Señal congelada.");
+                activarModoOffline();
+            }
+        }, 8000); 
+    }
+
+    // Si la app carga bien con 4G, apagamos el cronómetro
+    iframeApp.onload = function() {
+        clearTimeout(temporizadorCarga);
+        appCargadaExitosamente = true;
+        pantallaOffline.style.display = 'none';
+        iframeApp.style.display = 'block';
+    };
+
+    // Arrancamos el cronómetro apenas se abre la página
+    iniciarCronometroEmergencia();
+
+    // Eventos de red
+    window.addEventListener('online', function() { window.location.reload(); });
+    window.addEventListener('offline', activarModoOffline);
+
+    // Aquí conectamos al celador (Service Worker)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
+</script>
+    
 </body>
 </html>
