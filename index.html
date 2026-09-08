@@ -42,29 +42,47 @@
         const pantallaOffline = document.getElementById('pantalla-offline');
         const iframeApp = document.getElementById('mi-app');
         
-        let estabaDesconectado = false; // Memoria para saber si venimos sin internet
+        let temporizadorCarga = null;
+        let appCargadaExitosamente = false;
 
-       function revisarConexion() {
-            if (navigator.onLine) {
-                // Si veníamos sin internet, esperamos 3.5 segundos y reiniciamos todo limpio
-                if (estabaDesconectado) {
-                    setTimeout(() => {
-                        window.location.reload(); 
-                    }, 3500); 
-                } else {
-                    pantallaOffline.style.display = 'none';
-                    iframeApp.style.display = 'block';
-                }
-            } else {
+        function activarModoOffline() {
+            if (!appCargadaExitosamente) {
+                console.warn("⚠️ Señal muy débil o ausente. Forzando pantalla offline.");
                 pantallaOffline.style.display = 'flex';
                 iframeApp.style.display = 'none';
-                estabaDesconectado = true;
             }
         }
 
-        // window.addEventListener('online', revisarConexion);
-        // window.addEventListener('offline', revisarConexion);
-        revisarConexion(); // Revisa apenas carga la app
+        // 1. Cronómetro de seguridad: Si en 4 segundos el iframe no carga, asumimos red caída
+        function iniciarCronometroEmergencia() {
+            appCargadaExitosamente = false;
+            temporizadorCarga = setTimeout(activarModoOffline, 4000); // 4 segundos exactos
+        }
+
+        // 2. Si el iframe logra cargar bien, cancelamos el cronómetro y mostramos la app
+        iframeApp.onload = function() {
+            clearTimeout(temporizadorCarga);
+            appCargadaExitosamente = true;
+            pantallaOffline.style.display = 'none';
+            iframeApp.style.display = 'block';
+            console.log("✅ Aplicación cargada correctamente.");
+        };
+
+        // 3. Validación inicial al abrir la app
+        if (!navigator.onLine) {
+            activarModoOffline();
+        } else {
+            iniciarCronometroEmergencia();
+        }
+
+        // Escuchar cambios de red en vivo por si recupera señal
+        window.addEventListener('online', function() {
+            window.location.reload(); // Recarga limpia si vuelve el internet
+        });
+        
+        window.addEventListener('offline', function() {
+            activarModoOffline();
+        });
 
         // Aquí conectamos al celador (Service Worker)
         if ('serviceWorker' in navigator) {
