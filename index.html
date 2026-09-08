@@ -80,9 +80,20 @@
     // Arrancamos el cronómetro apenas se abre la página
     iniciarCronometroEmergencia();
 
-    // Eventos de red
-    window.addEventListener('online', function() { window.location.reload(); });
-    window.addEventListener('offline', activarModoOffline);
+   // Eventos de red con margen de paciencia para señales intermitentes
+    let timerIntermitencia = null;
+
+    window.addEventListener('online', function() {
+        if (timerIntermitencia) clearTimeout(timerIntermitencia);
+        window.location.reload(); 
+    });
+
+    window.addEventListener('offline', function() {
+        // Si las barras bajan a 1 o 2 pero vuelve rápido, esperamos 4 segundos antes de mostrar la pantalla offline
+        timerIntermitencia = setTimeout(function() {
+            activarModoOffline();
+        }, 4000); 
+    });
 
     // Aquí conectamos al celador (Service Worker)
     if ('serviceWorker' in navigator) {
