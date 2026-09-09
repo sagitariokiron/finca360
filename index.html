@@ -39,41 +39,39 @@
 
            <!-- Código inteligente definitivo: Sin parpadeos con señales bajas -->
        <!-- Código definitivo: 15 segundos y adiós carita triste -->
-        <script>
+       <script>
             const pantallaOffline = document.getElementById('pantalla-offline');
             const iframeApp = document.getElementById('mi-app');
             
-            let temporizadorCarga = null;
             let appCargadaExitosamente = false;
         
-            // Cronómetro ajustado a 15 SEGUNDOS para redes lentas (H / 3G)
-            function iniciarCronometroEmergencia() {
-                appCargadaExitosamente = false;
-                
-                temporizadorCarga = setTimeout(function() {
-                    if (!appCargadaExitosamente) {
-                        // Ocultamos el iframe para que la carita triste de Chrome jamás aparezca
-                        iframeApp.style.display = 'none';
-                        // Mostramos nuestra pantalla de advertencia elegante
-                        pantallaOffline.style.display = 'flex';
-                    }
-                }, 15000); 
+            // 1. Si de entrada el navegador sabe que no hay red, ni lo intentamos
+            if (!navigator.onLine) {
+                iframeApp.style.display = 'none';
+                pantallaOffline.style.display = 'flex';
             }
         
-            // Si la señal logra cargar antes de los 15 segundos, cancelamos todo y mostramos la app
+            // 2. Usamos un temporizador de respaldo agresivo a 10 SEGUNDOS
+            // Si la red "H" o "3G" es tan mala que congela el navegador, a los 10s lo matamos a la fuerza
+            setTimeout(function() {
+                if (!appCargadaExitosamente) {
+                    console.warn("⚠️ Red colapsada. Ocultando iframe para evitar la carita triste.");
+                    iframeApp.style.display = 'none';
+                    pantallaOffline.style.display = 'flex';
+                }
+            }, 10000);
+        
+            // Si Google Apps Script logra cargar antes de los 10 segundos
             iframeApp.onload = function() {
-                clearTimeout(temporizadorCarga);
                 appCargadaExitosamente = true;
                 pantallaOffline.style.display = 'none';
                 iframeApp.style.display = 'block';
             };
         
-            iniciarCronometroEmergencia();
-        
             // Celador (Service Worker)
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js');
             }
-        </script>    
+    </script>   
 </body>
 </html>
