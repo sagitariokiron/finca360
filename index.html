@@ -38,6 +38,7 @@
     <iframe id="mi-app" src="https://script.google.com/macros/s/AKfycbwImRaYqPhDvsJcb70Zqkc9s9yy6Ut-BYJwixOQKTQy4bQYM0avLwbYJ-N0YCJUdxvf/exec" allow="geolocation; camera; microphone"></iframe>
 
            <!-- Código inteligente definitivo: Sin parpadeos con señales bajas -->
+       <!-- Código definitivo: 15 segundos y adiós carita triste -->
         <script>
             const pantallaOffline = document.getElementById('pantalla-offline');
             const iframeApp = document.getElementById('mi-app');
@@ -45,43 +46,34 @@
             let temporizadorCarga = null;
             let appCargadaExitosamente = false;
         
-            // 1. "Que espere los 8 segundos fijos en H, 3G o X":
+            // Cronómetro ajustado a 15 SEGUNDOS para redes lentas (H / 3G)
             function iniciarCronometroEmergencia() {
                 appCargadaExitosamente = false;
                 
                 temporizadorCarga = setTimeout(function() {
-                    // Si pasaron los 8s y la app no logró cargar, muestra la pantalla
                     if (!appCargadaExitosamente) {
-                        pantallaOffline.style.display = 'flex';
+                        // Ocultamos el iframe para que la carita triste de Chrome jamás aparezca
                         iframeApp.style.display = 'none';
+                        // Mostramos nuestra pantalla de advertencia elegante
+                        pantallaOffline.style.display = 'flex';
                     }
-                }, 8000); 
+                }, 15000); 
             }
         
-            // 2. "Que NO muestre la pantalla cuando está en 4G (2 o 4 rayas)":
+            // Si la señal logra cargar antes de los 15 segundos, cancelamos todo y mostramos la app
             iframeApp.onload = function() {
-                clearTimeout(temporizadorCarga); // Apaga el reloj antes de los 8s
+                clearTimeout(temporizadorCarga);
                 appCargadaExitosamente = true;
                 pantallaOffline.style.display = 'none';
                 iframeApp.style.display = 'block';
             };
         
-            // 3. "Que se quite la pantalla y comience a cargar cuando pase a 4G":
-            window.addEventListener('online', function() {
-                // Solo recarga la página SI estaba atrapado en la pantalla de error
-                if (!appCargadaExitosamente) {
-                    window.location.reload(); 
-                }
-            });
-        
-            // Iniciar el reloj al abrir la app
             iniciarCronometroEmergencia();
         
             // Celador (Service Worker)
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js');
             }
-        </script>
-    
+        </script>    
 </body>
 </html>
