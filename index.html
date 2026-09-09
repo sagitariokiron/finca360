@@ -38,59 +38,50 @@
     <iframe id="mi-app" src="https://script.google.com/macros/s/AKfycbwImRaYqPhDvsJcb70Zqkc9s9yy6Ut-BYJwixOQKTQy4bQYM0avLwbYJ-N0YCJUdxvf/exec" allow="geolocation; camera; microphone"></iframe>
 
            <!-- Código inteligente definitivo: Sin parpadeos con señales bajas -->
-<script>
-    const pantallaOffline = document.getElementById('pantalla-offline');
-    const iframeApp = document.getElementById('mi-app');
-    
-    let temporizadorCarga = null;
-    let appCargadaExitosamente = false;
-    let timerIntermitencia = null;
-
-    // Cronómetro de seguridad de 8 segundos (trabaja en silencio al abrir)
-    function iniciarCronometroEmergencia() {
-        appCargadaExitosamente = false;
+        <script>
+            const pantallaOffline = document.getElementById('pantalla-offline');
+            const iframeApp = document.getElementById('mi-app');
+            
+            let temporizadorCarga = null;
+            let appCargadaExitosamente = false;
         
-        temporizadorCarga = setTimeout(function() {
-            // Solo muestra el mensaje si pasaron 8 segundos completos y el internet sigue muerto
-            if (!appCargadaExitosamente && !navigator.onLine) {
-                pantallaOffline.style.display = 'flex';
-                iframeApp.style.display = 'none';
+            // 1. "Que espere los 8 segundos fijos en H, 3G o X":
+            function iniciarCronometroEmergencia() {
+                appCargadaExitosamente = false;
+                
+                temporizadorCarga = setTimeout(function() {
+                    // Si pasaron los 8s y la app no logró cargar, muestra la pantalla
+                    if (!appCargadaExitosamente) {
+                        pantallaOffline.style.display = 'flex';
+                        iframeApp.style.display = 'none';
+                    }
+                }, 8000); 
             }
-        }, 8000); 
-    }
-
-    // Si el iframe carga bien (incluso con 2 barras de 4G), cancelamos todo y mostramos la app normal
-    iframeApp.onload = function() {
-        clearTimeout(temporizadorCarga);
-        appCargadaExitosamente = true;
-        pantallaOffline.style.display = 'none';
-        iframeApp.style.display = 'block';
-    };
-
-    // Arrancamos el cronómetro en segundo plano sin mostrar nada de entrada
-    iniciarCronometroEmergencia();
-
-    // Eventos de red con filtro para evitar que parpadee por bajones de una barra
-    window.addEventListener('online', function() {
-        if (timerIntermitencia) clearTimeout(timerIntermitencia);
-        window.location.reload(); 
-    });
-
-    window.addEventListener('offline', function() {
-        // Si las barras bajan, esperamos 5 segundos reales antes de asumir que se cayó del todo
-        timerIntermitencia = setTimeout(function() {
-            if (!navigator.onLine) {
-                pantallaOffline.style.display = 'flex';
-                iframeApp.style.display = 'none';
+        
+            // 2. "Que NO muestre la pantalla cuando está en 4G (2 o 4 rayas)":
+            iframeApp.onload = function() {
+                clearTimeout(temporizadorCarga); // Apaga el reloj antes de los 8s
+                appCargadaExitosamente = true;
+                pantallaOffline.style.display = 'none';
+                iframeApp.style.display = 'block';
+            };
+        
+            // 3. "Que se quite la pantalla y comience a cargar cuando pase a 4G":
+            window.addEventListener('online', function() {
+                // Solo recarga la página SI estaba atrapado en la pantalla de error
+                if (!appCargadaExitosamente) {
+                    window.location.reload(); 
+                }
+            });
+        
+            // Iniciar el reloj al abrir la app
+            iniciarCronometroEmergencia();
+        
+            // Celador (Service Worker)
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js');
             }
-        }, 5000); 
-    });
-
-    // Celador (Service Worker)
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-    }
-</script>
+        </script>
     
 </body>
 </html>
