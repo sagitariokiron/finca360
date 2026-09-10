@@ -13,7 +13,7 @@
         iframe {
             width: 100%; height: 100%; border: none; display: block;
         }
-        /* Pantalla de error (Apagada por defecto, solo sale si no hay red) */
+        /* Pantalla de error oculta por defecto y sin parpadeos */
         #pantalla-offline {
             display: none; 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -41,23 +41,20 @@
         const pantallaOffline = document.getElementById('pantalla-offline');
         const iframeApp = document.getElementById('mi-app');
 
-        // 1. Verificación en tiempo real: Si el teléfono está en Modo Avión o con la "X"
+        // 1. Verificación inicial de arranque: Solo si arranca en modo avión puro
         if (!navigator.onLine) {
             iframeApp.style.display = 'none';
             pantallaOffline.style.display = 'flex';
         }
 
-        // 2. Si la red regresa o el usuario se conecta a internet, aseguramos que la app fluya
-        window.addEventListener('online', function() {
-            pantallaOffline.style.display = 'none';
-            iframeApp.style.display = 'block';
-        });
-
-        // 3. Si el teléfono pierde la red por completo mientras está abierto
+        // 2. Si el teléfono pierde la red de forma total mientras está abierto
         window.addEventListener('offline', function() {
             iframeApp.style.display = 'none';
             pantallaOffline.style.display = 'flex';
         });
+
+        // NOTA: Quitamos el evento 'online' automático para evitar que 
+        // los micro-cortes de la red "H" congelen o recarguen la app a la fuerza.
 
         // Celador (Service Worker)
         if ('serviceWorker' in navigator) {
