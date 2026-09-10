@@ -13,9 +13,9 @@
         iframe {
             width: 100%; height: 100%; border: none; display: block;
         }
-        /* Diseño de la pantalla sin conexión corregido */
+        /* Pantalla de error (Apagada por defecto, solo sale si no hay red) */
         #pantalla-offline {
-            display: none; /* Oculta por defecto sin reglas que la contradigan abajo */
+            display: none; 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #2c3e50; color: white;
             z-index: 9999; text-align: center;
@@ -27,55 +27,39 @@
 </head>
 <body>
 
-    <!-- Pantalla de advertencia (Apagada por defecto) -->
+    <!-- Pantalla exclusiva para cuando el teléfono se queda 100% sin red -->
     <div id="pantalla-offline">
         <img src="Logo_Finca360_Final2.png" alt="Logo FINCA360" style="width: 180px; margin-bottom: 20px; border-radius: 15px;">
-        <h2 id="titulo-alerta">Señal deficiente o inestable</h2>
-        <p id="texto-alerta">Estamos experimentando una baja velocidad en tus datos móviles. Por favor espera un momento...</p>
+        <h2>No hay conexión a Internet</h2>
+        <p>Tu dispositivo está desconectado. Por favor, revisa tus datos, cierra la aplicación y vuelve a ingresar.</p>
     </div>
 
-    <!-- Tu aplicación intacta -->
+    <!-- Tu aplicación libre para cargar a su ritmo -->
     <iframe id="mi-app" src="https://script.google.com/macros/s/AKfycbwImRaYqPhDvsJcb70Zqkc9s9yy6Ut-BYJwixOQKTQy4bQYM0avLwbYJ-N0YCJUdxvf/exec" allow="geolocation; camera; microphone"></iframe>
 
     <script>
         const pantallaOffline = document.getElementById('pantalla-offline');
         const iframeApp = document.getElementById('mi-app');
-        const tituloAlerta = document.getElementById('titulo-alerta');
-        const textoAlerta = document.getElementById('texto-alerta');
-        
-        let appCargadaExitosamente = false;
 
-        // 1. Verificación instantánea si no hay red (Modo Avión / La "X")
+        // 1. Verificación en tiempo real: Si el teléfono está en Modo Avión o con la "X"
         if (!navigator.onLine) {
             iframeApp.style.display = 'none';
-            iframeApp.src = ''; // Matamos la carga de inmediato
-            tituloAlerta.innerText = "No hay conexión a Internet";
-            textoAlerta.innerHTML = "Tu dispositivo está desconectado. Por favor, revisa tus datos, cierra la aplicación y vuelve a ingresar.";
-            pantallaOffline.style.display = 'flex'; 
-        } else {
-            // 2. Temporizador inteligente de 15 segundos para redes "H" o "3G"
-            let temporizadorEmergencia = setTimeout(function() {
-                if (!appCargadaExitosamente) {
-                    // AQUÍ ESTÁ EL TRUCO: Cortamos la URL para que Chrome deje de buscar
-                    iframeApp.src = ''; 
-                    iframeApp.style.display = 'none';
-                    pantallaOffline.style.display = 'flex';
-                }
-            }, 15000);
-
-            // 3. Si la app logra cargar rápido (4G bueno o Wi-Fi)
-            iframeApp.onload = function() {
-                // Solo si el iframe todavía tiene su enlace (no fue cortado)
-                if (iframeApp.src !== '') {
-                    clearTimeout(temporizadorEmergencia);
-                    appCargadaExitosamente = true;
-                    pantallaOffline.style.display = 'none';
-                    iframeApp.style.display = 'block';
-                }
-            };
+            pantallaOffline.style.display = 'flex';
         }
 
-        // El Service Worker (Celador) se mantiene intacto
+        // 2. Si la red regresa o el usuario se conecta a internet, aseguramos que la app fluya
+        window.addEventListener('online', function() {
+            pantallaOffline.style.display = 'none';
+            iframeApp.style.display = 'block';
+        });
+
+        // 3. Si el teléfono pierde la red por completo mientras está abierto
+        window.addEventListener('offline', function() {
+            iframeApp.style.display = 'none';
+            pantallaOffline.style.display = 'flex';
+        });
+
+        // Celador (Service Worker)
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
         }
