@@ -37,41 +37,47 @@
     <!-- Tu aplicación intacta -->
     <iframe id="mi-app" src="https://script.google.com/macros/s/AKfycbwImRaYqPhDvsJcb70Zqkc9s9yy6Ut-BYJwixOQKTQy4bQYM0avLwbYJ-N0YCJUdxvf/exec" allow="geolocation; camera; microphone"></iframe>
 
-           <!-- Código inteligente definitivo: Sin parpadeos con señales bajas -->
-       <!-- Código definitivo: 15 segundos y adiós carita triste -->
-       <script>
+    <script>
             const pantallaOffline = document.getElementById('pantalla-offline');
             const iframeApp = document.getElementById('mi-app');
             
             let appCargadaExitosamente = false;
         
-            // 1. Si de entrada el navegador sabe que no hay red, ni lo intentamos
+            // 1. Verificación instantánea: Si el teléfono está en modo avión o con la "X" de sin red
             if (!navigator.onLine) {
                 iframeApp.style.display = 'none';
                 pantallaOffline.style.display = 'flex';
             }
         
-            // 2. Usamos un temporizador de respaldo agresivo a 10 SEGUNDOS
-            // Si la red "H" o "3G" es tan mala que congela el navegador, a los 10s lo matamos a la fuerza
-            setTimeout(function() {
+            // 2. Temporizador inteligente de 15 segundos
+            // Solo actuará si la red de plano se colgó y pasaron los 15s sin rastro de Google
+            let temporizadorEmergencia = setTimeout(function() {
                 if (!appCargadaExitosamente) {
-                    console.warn("⚠️ Red colapsada. Ocultando iframe para evitar la carita triste.");
                     iframeApp.style.display = 'none';
                     pantallaOffline.style.display = 'flex';
                 }
             }, 15000);
         
-            // Si Google Apps Script logra cargar antes de los 10 segundos
+            // 3. Si hay buen internet (4G o Wi-Fi rápido), esto carga rápido, 
+            // cancela el reloj de inmediato y evita cualquier "flashazo" feo.
             iframeApp.onload = function() {
+                clearTimeout(temporizadorEmergencia);
                 appCargadaExitosamente = true;
                 pantallaOffline.style.display = 'none';
                 iframeApp.style.display = 'block';
             };
         
-            // Celador (Service Worker)
+            // Detectar si el usuario recupera la red en la calle de golpe
+            window.addEventListener('online', function() {
+                if (!appCargadaExitosamente) {
+                    window.location.reload();
+                }
+            });
+        
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js');
             }
-    </script>   
+    </script>
+       
 </body>
 </html>
