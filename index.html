@@ -13,7 +13,7 @@
         iframe {
             width: 100%; height: 100%; border: none; display: block;
         }
-        /* Pantalla de advertencia exclusiva para redes lentas */
+        /* Pantalla de advertencia corporativa (Apagada por defecto) */
         #pantalla-offline {
             display: none; 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -22,16 +22,16 @@
             flex-direction: column; justify-content: center; align-items: center;
         }
         #pantalla-offline h2 { margin-bottom: 10px; color: #f1c40f; }
-        #pantalla-offline p { margin: 0 20px; font-size: 1.2rem; }
+        #pantalla-offline p { margin: 0 20px; font-size: 1.2rem; line-height: 1.5; }
     </style>
 </head>
 <body>
 
-    <!-- Pantalla de advertencia -->
+    <!-- Pantalla con instrucciones claras para redes lentas -->
     <div id="pantalla-offline">
         <img src="Logo_Finca360_Final2.png" alt="Logo FINCA360" style="width: 180px; margin-bottom: 20px; border-radius: 15px;">
-        <h2 id="titulo-alerta">Señal deficiente o inestable</h2>
-        <p id="texto-alerta">La red H/3G está lenta. Por favor espera un momento, la aplicación está intentando cargar...</p>
+        <h2 id="titulo-alerta">Señal deficiente o inestable (H / 3G)</h2>
+        <p id="texto-alerta">La red móvil está muy lenta en este momento. Si la carga tarda demasiado, por favor cierre la aplicación y vuelva a abrirla, o espere a que la señal mejore a 4G.</p>
     </div>
 
     <!-- Tu aplicación -->
@@ -45,47 +45,33 @@
         
         let appCargadaExitosamente = false;
 
-        // 1. Si no hay red en absoluto (Modo Avión / X)
+        // 1. Verificación instantánea si el teléfono está totalmente sin red (Modo Avión / X)
         if (!navigator.onLine) {
             iframeApp.style.display = 'none';
             tituloAlerta.innerText = "No hay conexión a Internet";
             textoAlerta.innerHTML = "Tu dispositivo está desconectado. Revisa tus datos y vuelve a ingresar.";
             pantallaOffline.style.display = 'flex';
         } else {
-            // 2. Detectar inteligentemente el tipo de red del teléfono
-            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-            let esRedLenta = false;
-
-            if (connection) {
-                // Si el navegador reporta explícitamente que estamos en 3G, 2G o slow-2g (lo que incluye H y 3G)
-                if (connection.effectiveType === '3g' || connection.effectiveType === '2g' || connection.effectiveType === 'slow-2g') {
-                    esRedLenta = true;
+            // 2. Temporizador de paciencia (10 segundos)
+            // Si hay Wi-Fi o 4G bueno, la app carga en 2 segundos, mata este reloj y no ves nada.
+            // Si la red H o 3G se ahoga y pasan 10 segundos sin cargar, salta este escudo y muestra el mensaje.
+            let temporizadorLentitud = setTimeout(function() {
+                if (!appCargadaExitosamente) {
+                    iframeApp.src = ''; // Cortamos la carga para evitar que Chrome saque la carita triste
+                    iframeApp.style.display = 'none';
+                    pantallaOffline.style.display = 'flex';
                 }
-            }
+            }, 10000);
 
-            // 3. Comportamiento condicional estricto:
-            if (esRedLenta) {
-                // SI ES H o 3G: Activamos el temporizador de paciencia con aviso corporativo
-                let temporizadorEspera = setTimeout(function() {
-                    if (!appCargadaExitosamente) {
-                        pantallaOffline.style.display = 'flex';
-                    }
-                }, 15000);
-
-                iframeApp.onload = function() {
-                    clearTimeout(temporizadorEspera);
+            // 3. Si la app logra cargar a tiempo
+            iframeApp.onload = function() {
+                if (iframeApp.src !== '') {
+                    clearTimeout(temporizadorLentitud);
                     appCargadaExitosamente = true;
                     pantallaOffline.style.display = 'none';
                     iframeApp.style.display = 'block';
-                };
-            } else {
-                // SI ES 4G o Wi-Fi: Cero temporizadores, cero avisos. Carga limpia y directa siempre.
-                iframeApp.onload = function() {
-                    appCargadaExitosamente = true;
-                    pantallaOffline.style.display = 'none';
-                    iframeApp.style.display = 'block';
-                };
-            }
+                }
+            };
         }
 
         // Si se pierde la red por completo durante el uso
